@@ -40,3 +40,10 @@ export function expenseShareOfIncome(income: number, expenses: number): number {
 export function remainingBalance(income: number, expenses: number): number {
   return income - expenses;
 }
+
+export function budgetUtilization(spent: number, limit: number): number {
+  if (limit <= 0) {
+    return spent > 0 ? 100 : 0;
+  }
+  return clampPercent((spent / limit) * 100);
+}

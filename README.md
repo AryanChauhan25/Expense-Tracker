@@ -6,6 +6,11 @@ Full-stack expense tracker and monthly funds manager (Next.js + Supabase), built
 
 - **Phase 1 — done:** Next.js 16 App Router, TypeScript, Tailwind v4, shadcn/ui, dark mode, Supabase SSR clients.
 - **Phase 2 — done:** database schema, email/password auth, profile management, row-level security.
+- **Phase 3 — done:** income module CRUD (salary, business, freelance, other) with filters and summaries.
+- **Phase 4 — done:** expense module CRUD with categories, recurring and planned future expenses.
+- **Phase 5 — done:** budget planner with monthly budgets, category limits and overspending alerts.
+- **Phase 6 — done:** dashboard analytics, charts, financial health score and smart insights.
+- **Phase 7 — done:** savings goals with emergency fund, investments, progress and contributions.
 
 ## Local development
 
@@ -64,4 +69,4 @@ Auth is enforced in two places: `proxy.ts` refreshes the session and redirects u
 
 ## Next phase
 
-**Phase 3:** income module CRUD (salary, business, freelance, other).
+**Phase 8:** reports and export (daily/weekly/monthly/yearly/custom, PDF & Excel).
