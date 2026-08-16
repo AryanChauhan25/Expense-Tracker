@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ArrowLeftRight,
   BarChart3,
   Landmark,
   LayoutDashboard,
@@ -19,6 +20,7 @@ const moduleIcons = {
   dashboard: LayoutDashboard,
   income: TrendingUp,
   expenses: Receipt,
+  loans: ArrowLeftRight,
   budget: PiggyBank,
   savings: Landmark,
   reports: LineChart,

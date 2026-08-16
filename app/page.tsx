@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  ArrowLeftRight,
   ArrowRight,
   BarChart3,
   Landmark,
@@ -27,6 +28,7 @@ const moduleIcons = {
   dashboard: BarChart3,
   income: TrendingUp,
   expenses: Receipt,
+  loans: ArrowLeftRight,
   budget: PiggyBank,
   savings: Landmark,
   reports: LineChart,

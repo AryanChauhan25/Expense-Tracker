@@ -17,6 +17,7 @@ export type PaymentMethodEnum =
   | "debit_card"
   | "credit_card"
   | "other";
+export type MoneyDirectionEnum = "lent" | "borrowed";
 
 type Timestamps = {
   created_at: string;
@@ -195,12 +196,47 @@ export type Database = {
         };
         Relationships: [];
       };
+      money_loans: {
+        Row: Timestamps & {
+          id: string;
+          user_id: string;
+          direction: MoneyDirectionEnum;
+          person_name: string;
+          amount: number;
+          repaid_amount: number;
+          loan_date: string;
+          due_date: string | null;
+          notes: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          direction: MoneyDirectionEnum;
+          person_name: string;
+          amount: number;
+          repaid_amount?: number;
+          loan_date?: string;
+          due_date?: string | null;
+          notes?: string | null;
+        };
+        Update: {
+          direction?: MoneyDirectionEnum;
+          person_name?: string;
+          amount?: number;
+          repaid_amount?: number;
+          loan_date?: string;
+          due_date?: string | null;
+          notes?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       income_category: IncomeCategoryEnum;
       payment_method: PaymentMethodEnum;
+      money_direction: MoneyDirectionEnum;
     };
     CompositeTypes: Record<string, never>;
   };
