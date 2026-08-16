@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { expenseFormSchema, parseRecurringFlag } from "@/lib/validations/expense";
+import { expenseFormSchema } from "@/lib/validations/expense";
 
 export type ExpenseActionState = {
   error?: string;
@@ -13,35 +13,11 @@ export type ExpenseActionState = {
 function parseExpenseForm(formData: FormData) {
   return expenseFormSchema.safeParse({
     title: formData.get("title"),
-    category_id: formData.get("category_id"),
+    vendor: formData.get("vendor"),
     amount: formData.get("amount"),
+    payment_method: formData.get("payment_method"),
     expense_date: formData.get("expense_date"),
-    is_recurring: parseRecurringFlag(formData.get("is_recurring")),
-    notes: formData.get("notes") ?? "",
   });
-}
-
-async function assertCategoryAccessible(
-  categoryId: string,
-  userId: string,
-): Promise<string | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("expense_categories")
-    .select("id")
-    .eq("id", categoryId)
-    .or(`user_id.is.null,user_id.eq.${userId}`)
-    .maybeSingle();
-
-  if (error) {
-    return error.message;
-  }
-
-  if (!data) {
-    return "Selected category is not available.";
-  }
-
-  return null;
 }
 
 export async function createExpense(
@@ -65,24 +41,16 @@ export async function createExpense(
     return { error: "You must be signed in." };
   }
 
-  const categoryError = await assertCategoryAccessible(
-    parsed.data.category_id,
-    user.id,
-  );
-  if (categoryError) {
-    return { error: categoryError };
-  }
-
-  const notes = parsed.data.notes?.trim() || null;
-
   const { error } = await supabase.from("expenses").insert({
     user_id: user.id,
     title: parsed.data.title.trim(),
-    category_id: parsed.data.category_id,
+    vendor: parsed.data.vendor.trim(),
     amount: parsed.data.amount,
+    payment_method: parsed.data.payment_method,
     expense_date: parsed.data.expense_date,
-    is_recurring: parsed.data.is_recurring,
-    notes,
+    category_id: null,
+    is_recurring: false,
+    notes: null,
   });
 
   if (error) {
@@ -120,25 +88,14 @@ export async function updateExpense(
     return { error: "You must be signed in." };
   }
 
-  const categoryError = await assertCategoryAccessible(
-    parsed.data.category_id,
-    user.id,
-  );
-  if (categoryError) {
-    return { error: categoryError };
-  }
-
-  const notes = parsed.data.notes?.trim() || null;
-
   const { error } = await supabase
     .from("expenses")
     .update({
       title: parsed.data.title.trim(),
-      category_id: parsed.data.category_id,
+      vendor: parsed.data.vendor.trim(),
       amount: parsed.data.amount,
+      payment_method: parsed.data.payment_method,
       expense_date: parsed.data.expense_date,
-      is_recurring: parsed.data.is_recurring,
-      notes,
     })
     .eq("id", id)
     .eq("user_id", user.id);

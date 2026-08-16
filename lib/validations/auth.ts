@@ -23,6 +23,10 @@ export const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "AUD"] as const;
 export const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(80),
   currency: z.enum(CURRENCIES),
+  credit_card_limit: z.coerce
+    .number({ invalid_type_error: "Credit card limit must be a number" })
+    .min(0, "Credit card limit cannot be negative")
+    .max(999_999_999.99, "Amount is too large"),
 });
 
 export type ProfileValues = z.infer<typeof profileSchema>;

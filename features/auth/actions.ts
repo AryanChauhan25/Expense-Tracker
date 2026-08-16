@@ -105,6 +105,7 @@ export async function updateProfile(
   const parsed = profileSchema.safeParse({
     name: formData.get("name"),
     currency: formData.get("currency"),
+    credit_card_limit: formData.get("credit_card_limit"),
   });
 
   if (!parsed.success) {
@@ -122,7 +123,11 @@ export async function updateProfile(
 
   const { error } = await supabase
     .from("users")
-    .update({ name: parsed.data.name, currency: parsed.data.currency })
+    .update({
+      name: parsed.data.name,
+      currency: parsed.data.currency,
+      credit_card_limit: parsed.data.credit_card_limit,
+    })
     .eq("id", user.id);
 
   if (error) {
@@ -130,5 +135,7 @@ export async function updateProfile(
   }
 
   revalidatePath("/profile");
+  revalidatePath("/expenses");
+  revalidatePath("/dashboard");
   return { message: "Profile updated." };
 }

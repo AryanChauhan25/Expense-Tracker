@@ -52,13 +52,28 @@ export function AppNav({ orientation = "vertical", onNavigate }: AppNavProps) {
             onClick={onNavigate}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "group relative flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-out",
               isActive
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+                ? "bg-primary/12 text-foreground shadow-sm shadow-primary/10"
+                : "text-muted-foreground hover:-translate-y-px hover:bg-accent/70 hover:text-foreground hover:shadow-sm",
             )}
           >
-            <Icon className="size-4 shrink-0" aria-hidden />
+            <span
+              className={cn(
+                "absolute inset-y-2 left-0 w-1 rounded-full bg-primary transition-all duration-300",
+                isActive
+                  ? "opacity-100"
+                  : "scale-y-50 opacity-0 group-hover:opacity-40",
+              )}
+              aria-hidden
+            />
+            <Icon
+              className={cn(
+                "size-4 shrink-0 transition-transform duration-300",
+                isActive ? "text-primary" : "group-hover:scale-110",
+              )}
+              aria-hidden
+            />
             {module.label}
           </Link>
         );

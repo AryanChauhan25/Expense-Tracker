@@ -114,6 +114,38 @@ export function ProfileForm({ defaultValues, email }: ProfileFormProps) {
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="credit_card_limit"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Credit card limit</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0"
+                  placeholder="50000"
+                  name={field.name}
+                  value={field.value ?? ""}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    field.onChange(value === "" ? undefined : value);
+                  }}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <FormDescription>
+                Added to your monthly income for spending power (income +
+                credit limit − expenses).
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit" disabled={isPending}>
           {isPending ? (
             <>

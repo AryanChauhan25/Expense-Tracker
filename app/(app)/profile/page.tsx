@@ -31,7 +31,7 @@ export default async function ProfilePage() {
     <>
       <PageHeader
         title="Profile"
-        description="Manage your account details and display currency."
+        description="Manage your account, currency, and credit card limit."
       />
 
       <Card className="max-w-xl">
@@ -47,6 +47,7 @@ export default async function ProfilePage() {
             defaultValues={{
               name: profile.name,
               currency: toCurrency(profile.currency),
+              credit_card_limit: Number(profile.credit_card_limit ?? 0),
             }}
           />
         </CardContent>

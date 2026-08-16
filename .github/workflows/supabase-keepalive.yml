@@ -1,0 +1,60 @@
+name: Supabase Keep-Alive
+
+# Free-tier Supabase projects pause after ~7 days of inactivity.
+# This workflow pings Auth + the REST API so the project stays awake.
+# It must run outside Supabase — a paused project cannot wake itself.
+
+on:
+  schedule:
+    # Every 3 days at 06:15 UTC
+    - cron: "15 6 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Hit Auth health + REST (database)
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "Missing GitHub secrets: NEXT_PUBLIC_SUPABASE_URL and/or NEXT_PUBLIC_SUPABASE_ANON_KEY"
+            exit 1
+          fi
+
+          # Strip trailing slash if present
+          SUPABASE_URL="${SUPABASE_URL%/}"
+
+          echo "Checking Auth health…"
+          auth_status=$(curl -sS -o /tmp/auth-health.json -w "%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL}/auth/v1/health")
+          echo "Auth HTTP ${auth_status}"
+          cat /tmp/auth-health.json || true
+          echo
+
+          echo "Checking REST / expense_categories…"
+          db_status=$(curl -sS -o /tmp/db-ping.json -w "%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Prefer: count=exact" \
+            "${SUPABASE_URL}/rest/v1/expense_categories?select=id&limit=1")
+          echo "REST HTTP ${db_status}"
+          cat /tmp/db-ping.json || true
+          echo
+
+          # Database/REST activity is what keeps free-tier projects from pausing.
+          if [ "$db_status" != "200" ]; then
+            echo "Keep-alive failed (REST ${db_status}). If the project is paused, restore it first:"
+            echo "https://supabase.com/dashboard/project/_/settings/general"
+            exit 1
+          fi
+
+          echo "Keep-alive OK — project should remain active."

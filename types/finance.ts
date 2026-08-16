@@ -12,6 +12,7 @@ export type UserProfile = {
   name: string;
   email: string;
   currency: string;
+  credit_card_limit: number;
   created_at: string;
 };
 
@@ -39,7 +40,9 @@ export type ExpenseRecord = {
   id: string;
   user_id: string;
   title: string;
-  category_id: string;
+  vendor: string | null;
+  payment_method: string;
+  category_id: string | null;
   amount: number;
   expense_date: string;
   month: number;

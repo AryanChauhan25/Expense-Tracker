@@ -11,6 +11,12 @@ export type Json =
   | Json[];
 
 export type IncomeCategoryEnum = "salary" | "business" | "freelance" | "other";
+export type PaymentMethodEnum =
+  | "cash"
+  | "upi"
+  | "debit_card"
+  | "credit_card"
+  | "other";
 
 type Timestamps = {
   created_at: string;
@@ -26,12 +32,14 @@ export type Database = {
           name: string;
           email: string;
           currency: string;
+          credit_card_limit: number;
         };
         Insert: {
           id: string;
           name?: string;
           email: string;
           currency?: string;
+          credit_card_limit?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -40,6 +48,7 @@ export type Database = {
           name?: string;
           email?: string;
           currency?: string;
+          credit_card_limit?: number;
           updated_at?: string;
         };
         Relationships: [];
@@ -111,6 +120,8 @@ export type Database = {
           year: number;
           is_recurring: boolean;
           notes: string | null;
+          vendor: string | null;
+          payment_method: PaymentMethodEnum;
         };
         Insert: {
           id?: string;
@@ -121,6 +132,8 @@ export type Database = {
           expense_date?: string;
           is_recurring?: boolean;
           notes?: string | null;
+          vendor?: string | null;
+          payment_method?: PaymentMethodEnum;
         };
         Update: {
           title?: string;
@@ -129,6 +142,8 @@ export type Database = {
           expense_date?: string;
           is_recurring?: boolean;
           notes?: string | null;
+          vendor?: string | null;
+          payment_method?: PaymentMethodEnum;
         };
         Relationships: [];
       };
@@ -185,6 +200,7 @@ export type Database = {
     Functions: Record<string, never>;
     Enums: {
       income_category: IncomeCategoryEnum;
+      payment_method: PaymentMethodEnum;
     };
     CompositeTypes: Record<string, never>;
   };

@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { getBudgetOverview } from "@/features/budget/queries";
-import { listExpenseCategories } from "@/features/expenses/queries";
 import {
   buildInsights,
   type DashboardInsight,
@@ -108,7 +107,6 @@ export async function getDashboardAnalytics(
   const [
     incomeResult,
     expensesResult,
-    categoriesResult,
     budgetResult,
     trendIncomeResult,
     trendExpensesResult,
@@ -121,11 +119,10 @@ export async function getDashboardAnalytics(
       .eq("year", year),
     supabase
       .from("expenses")
-      .select("amount, category_id, expense_date, is_recurring")
+      .select("amount, payment_method, expense_date, is_recurring")
       .eq("user_id", user.id)
       .eq("month", month)
       .eq("year", year),
-    listExpenseCategories(),
     getBudgetOverview(month, year),
     supabase
       .from("income")
@@ -147,9 +144,6 @@ export async function getDashboardAnalytics(
   if (expensesResult.error) {
     return { analytics: null, error: expensesResult.error.message };
   }
-  if (categoriesResult.error) {
-    return { analytics: null, error: categoriesResult.error };
-  }
   if (budgetResult.error) {
     return { analytics: null, error: budgetResult.error };
   }
@@ -169,7 +163,7 @@ export async function getDashboardAnalytics(
   let totalExpenses = 0;
   let recurringExpenseTotal = 0;
   let plannedExpenseTotal = 0;
-  const spentByCategory = new Map<string, number>();
+  const spentByPayment = new Map<string, number>();
   const spentByDay = new Map<number, number>();
 
   for (const row of expensesResult.data ?? []) {
@@ -182,10 +176,10 @@ export async function getDashboardAnalytics(
     if (row.expense_date > today) {
       plannedExpenseTotal += amount;
     }
-    if (row.category_id) {
-      spentByCategory.set(
-        row.category_id,
-        (spentByCategory.get(row.category_id) ?? 0) + amount,
+    if (row.payment_method) {
+      spentByPayment.set(
+        row.payment_method,
+        (spentByPayment.get(row.payment_method) ?? 0) + amount,
       );
     }
 
@@ -194,20 +188,29 @@ export async function getDashboardAnalytics(
   }
 
   const savings = remainingBalance(totalIncome, totalExpenses);
-  const categoryById = new Map(
-    categoriesResult.categories.map((category) => [category.id, category]),
-  );
 
-  const expensesByCategory: CategorySlice[] = [...spentByCategory.entries()]
-    .map(([id, amount]) => {
-      const category = categoryById.get(id);
-      return {
-        id,
-        name: category?.name ?? "Uncategorised",
-        color: category?.color ?? "#64748b",
-        amount,
-      };
-    })
+  const paymentColors: Record<string, string> = {
+    cash: "#64748b",
+    upi: "#0ea5e9",
+    debit_card: "#8b5cf6",
+    credit_card: "#f59e0b",
+    other: "#94a3b8",
+  };
+  const paymentLabels: Record<string, string> = {
+    cash: "Cash",
+    upi: "UPI",
+    debit_card: "Debit card",
+    credit_card: "Credit card",
+    other: "Other",
+  };
+
+  const expensesByCategory: CategorySlice[] = [...spentByPayment.entries()]
+    .map(([id, amount]) => ({
+      id,
+      name: paymentLabels[id] ?? id,
+      color: paymentColors[id] ?? "#64748b",
+      amount,
+    }))
     .sort((a, b) => b.amount - a.amount);
 
   const incomeByPeriod = new Map<string, number>();

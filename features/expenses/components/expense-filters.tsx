@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 
 import { MONTH_NAMES } from "@/features/expenses/meta";
-import type { ExpenseCategoryRow } from "@/features/expenses/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,27 +14,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_METHODS,
+} from "@/lib/validations/expense";
 
 type ExpenseFiltersProps = {
   month?: number;
   year?: number;
-  category_id?: string;
-  recurring?: string;
-  timing?: string;
+  payment_method?: string;
   q?: string;
   years: number[];
-  categories: ExpenseCategoryRow[];
 };
 
 export function ExpenseFiltersBar({
   month,
   year,
-  category_id,
-  recurring,
-  timing,
+  payment_method,
   q = "",
   years,
-  categories,
 }: ExpenseFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -84,13 +81,11 @@ export function ExpenseFiltersBar({
     });
   }
 
-  const hasFilters = Boolean(
-    month || year || category_id || recurring || timing || q,
-  );
+  const hasFilters = Boolean(month || year || payment_method || q);
 
   return (
     <div
-      className={`flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center ${isPending ? "opacity-70" : ""}`}
+      className={`flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center transition-opacity duration-200 ${isPending ? "opacity-70" : ""}`}
     >
       <div className="relative min-w-[180px] flex-1">
         <Search
@@ -101,9 +96,9 @@ export function ExpenseFiltersBar({
           key={searchInputKey}
           defaultValue={searchSeed}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search title…"
+          placeholder="Search what or where…"
           className="pl-8"
-          aria-label="Search expenses by title"
+          aria-label="Search expenses"
         />
       </div>
 
@@ -142,56 +137,22 @@ export function ExpenseFiltersBar({
       </Select>
 
       <Select
-        value={category_id || "all"}
-        onValueChange={(value) => update("category_id", value ?? "all")}
+        value={payment_method || "all"}
+        onValueChange={(value) => update("payment_method", value ?? "all")}
       >
         <SelectTrigger
-          className="w-full sm:w-[170px]"
-          aria-label="Filter by category"
+          className="w-full sm:w-[160px]"
+          aria-label="Filter by payment method"
         >
-          <SelectValue placeholder="Category" />
+          <SelectValue placeholder="Paid with" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All categories</SelectItem>
-          {categories.map((category) => (
-            <SelectItem key={category.id} value={category.id}>
-              {category.name}
+          <SelectItem value="all">All payments</SelectItem>
+          {PAYMENT_METHODS.map((method) => (
+            <SelectItem key={method} value={method}>
+              {PAYMENT_METHOD_LABELS[method]}
             </SelectItem>
           ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        value={recurring || "all"}
-        onValueChange={(value) => update("recurring", value ?? "all")}
-      >
-        <SelectTrigger
-          className="w-full sm:w-[140px]"
-          aria-label="Filter by recurring"
-        >
-          <SelectValue placeholder="Recurring" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All types</SelectItem>
-          <SelectItem value="yes">Recurring</SelectItem>
-          <SelectItem value="no">One-time</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select
-        value={timing || "all"}
-        onValueChange={(value) => update("timing", value ?? "all")}
-      >
-        <SelectTrigger
-          className="w-full sm:w-[150px]"
-          aria-label="Filter by timing"
-        >
-          <SelectValue placeholder="Timing" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All dates</SelectItem>
-          <SelectItem value="past">Past &amp; today</SelectItem>
-          <SelectItem value="planned">Planned future</SelectItem>
         </SelectContent>
       </Select>
 

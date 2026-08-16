@@ -11,16 +11,12 @@ import {
   updateExpense,
   type ExpenseActionState,
 } from "@/features/expenses/actions";
-import type {
-  ExpenseCategoryRow,
-  ExpenseWithCategory,
-} from "@/features/expenses/queries";
+import type { ExpenseRow } from "@/features/expenses/queries";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -34,9 +30,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import {
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_METHODS,
   expenseFormSchema,
   type ExpenseFormValues,
 } from "@/lib/validations/expense";
@@ -44,8 +40,7 @@ import {
 const initialState: ExpenseActionState = {};
 
 type ExpenseFormProps = {
-  expense?: ExpenseWithCategory;
-  categories: ExpenseCategoryRow[];
+  expense?: ExpenseRow;
   onSuccess?: () => void;
 };
 
@@ -53,11 +48,7 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function ExpenseForm({
-  expense,
-  categories,
-  onSuccess,
-}: ExpenseFormProps) {
+export function ExpenseForm({ expense, onSuccess }: ExpenseFormProps) {
   const action = expense ? updateExpense : createExpense;
   const [state, formAction, isPending] = useActionState(action, initialState);
 
@@ -65,11 +56,10 @@ export function ExpenseForm({
     resolver: zodResolver(expenseFormSchema),
     defaultValues: {
       title: expense?.title ?? "",
-      category_id: expense?.category_id ?? categories[0]?.id ?? "",
+      vendor: expense?.vendor ?? "",
       amount: expense ? Number(expense.amount) : undefined,
+      payment_method: expense?.payment_method ?? "credit_card",
       expense_date: expense?.expense_date ?? todayIso(),
-      is_recurring: expense?.is_recurring ?? false,
-      notes: expense?.notes ?? "",
     },
   });
 
@@ -96,10 +86,28 @@ export function ExpenseForm({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>What</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Grocery run"
+                  placeholder="Swiggy food, whey protein…"
+                  autoComplete="off"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="vendor"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>From</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Swiggy, Beastlife, Amazon…"
                   autoComplete="off"
                   {...field}
                 />
@@ -112,42 +120,6 @@ export function ExpenseForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
-            name="category_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <Select
-                  name={field.name}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <span className="flex items-center gap-2">
-                          <span
-                            className="size-2.5 rounded-full"
-                            style={{ backgroundColor: category.color }}
-                            aria-hidden
-                          />
-                          {category.name}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="amount"
             render={({ field }) => (
               <FormItem>
@@ -158,7 +130,7 @@ export function ExpenseForm({
                     inputMode="decimal"
                     step="0.01"
                     min="0.01"
-                    placeholder="0.00"
+                    placeholder="350"
                     name={field.name}
                     value={field.value ?? ""}
                     onChange={(event) => {
@@ -173,6 +145,35 @@ export function ExpenseForm({
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="payment_method"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Paid with</FormLabel>
+                <Select
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Payment method" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {PAYMENT_METHODS.map((method) => (
+                      <SelectItem key={method} value={method}>
+                        {PAYMENT_METHOD_LABELS[method]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <FormField
@@ -183,52 +184,6 @@ export function ExpenseForm({
               <FormLabel>Date</FormLabel>
               <FormControl>
                 <Input type="date" {...field} />
-              </FormControl>
-              <FormDescription>
-                Use a future date for planned expenses.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="is_recurring"
-          render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-lg border px-3 py-3">
-              <div className="space-y-0.5">
-                <FormLabel>Recurring expense</FormLabel>
-                <FormDescription>
-                  Mark subscriptions and repeating bills.
-                </FormDescription>
-              </div>
-              <FormControl>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="hidden"
-                    name="is_recurring"
-                    value={field.value ? "true" : "false"}
-                  />
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    aria-label="Recurring expense"
-                  />
-                </div>
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Optional notes" rows={3} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

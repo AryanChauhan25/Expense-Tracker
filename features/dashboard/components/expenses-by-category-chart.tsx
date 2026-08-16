@@ -30,8 +30,8 @@ export function ExpensesByCategoryChart({
 
   return (
     <ChartCard
-      title="Expenses by category"
-      description="Share of spending across categories this month."
+      title="Expenses by payment"
+      description="Share of spending by how you paid this month."
     >
       {chartData.length === 0 ? (
         <EmptyChart message="No expenses recorded for this period." />

@@ -1,12 +1,8 @@
-import { Pencil, RefreshCw } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 import { DeleteExpenseButton } from "@/features/expenses/components/delete-expense-button";
 import { ExpenseDialog } from "@/features/expenses/components/expense-dialog";
-import type {
-  ExpenseCategoryRow,
-  ExpenseWithCategory,
-} from "@/features/expenses/queries";
-import { Badge } from "@/components/ui/badge";
+import type { ExpenseRow } from "@/features/expenses/queries";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,11 +12,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  PAYMENT_METHOD_LABELS,
+  type PaymentMethod,
+} from "@/lib/validations/expense";
 import { formatCurrency } from "@/utils/finance-calculations";
 
 type ExpenseTableProps = {
-  rows: ExpenseWithCategory[];
-  categories: ExpenseCategoryRow[];
+  rows: ExpenseRow[];
   currency: string;
 };
 
@@ -32,22 +31,16 @@ function formatDate(value: string): string {
   }).format(new Date(`${value}T00:00:00`));
 }
 
-function isPlanned(date: string): boolean {
-  return date > new Date().toISOString().slice(0, 10);
-}
-
-export function ExpenseTable({
-  rows,
-  categories,
-  currency,
-}: ExpenseTableProps) {
+export function ExpenseTable({ rows, currency }: ExpenseTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border">
+    <div className="animate-fade-up stagger-2 overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-sm shadow-black/5 ring-1 ring-border/40 backdrop-blur-sm">
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Category</TableHead>
+            <TableHead>What</TableHead>
+            <TableHead>From</TableHead>
+            <TableHead>Paid with</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead className="w-[100px] text-right">Actions</TableHead>
@@ -57,39 +50,14 @@ export function ExpenseTable({
           {rows.map((row) => (
             <TableRow key={row.id}>
               <TableCell>
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium">{row.title}</p>
-                    {row.is_recurring ? (
-                      <Badge variant="secondary" className="gap-1">
-                        <RefreshCw className="size-3" aria-hidden />
-                        Recurring
-                      </Badge>
-                    ) : null}
-                    {isPlanned(row.expense_date) ? (
-                      <Badge variant="outline">Planned</Badge>
-                    ) : null}
-                  </div>
-                  {row.notes ? (
-                    <p className="line-clamp-1 text-xs text-muted-foreground">
-                      {row.notes}
-                    </p>
-                  ) : null}
-                </div>
+                <p className="font-medium">{row.title}</p>
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {row.vendor || "—"}
               </TableCell>
               <TableCell>
-                {row.category ? (
-                  <span className="inline-flex items-center gap-2 text-sm">
-                    <span
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: row.category.color }}
-                      aria-hidden
-                    />
-                    {row.category.name}
-                  </span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Uncategorised</span>
-                )}
+                {PAYMENT_METHOD_LABELS[row.payment_method as PaymentMethod] ??
+                  row.payment_method}
               </TableCell>
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {formatDate(row.expense_date)}
@@ -101,7 +69,6 @@ export function ExpenseTable({
                 <div className="flex items-center justify-end gap-1">
                   <ExpenseDialog
                     expense={row}
-                    categories={categories}
                     trigger={
                       <Button
                         variant="ghost"
@@ -119,6 +86,7 @@ export function ExpenseTable({
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

@@ -17,59 +17,38 @@ export function ExpenseSummaryCards({
   currency,
 }: ExpenseSummaryCardsProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <Card>
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <Card className="animate-fade-up stagger-1">
         <CardHeader>
           <CardDescription>Total (filtered)</CardDescription>
-          <CardTitle className="text-2xl tabular-nums">
+          <CardTitle className="font-heading text-2xl tabular-nums tracking-tight sm:text-3xl">
             {formatCurrency(summary.total, currency)}
           </CardTitle>
         </CardHeader>
       </Card>
-      <Card>
+      <Card className="animate-fade-up stagger-2">
         <CardHeader>
           <CardDescription>Entries</CardDescription>
-          <CardTitle className="text-2xl tabular-nums">
+          <CardTitle className="font-heading text-2xl tabular-nums tracking-tight sm:text-3xl">
             {summary.count}
           </CardTitle>
         </CardHeader>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardDescription>Recurring</CardDescription>
-          <CardTitle className="text-2xl tabular-nums">
-            {formatCurrency(summary.recurringTotal, currency)}
-          </CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardDescription>Planned future</CardDescription>
-          <CardTitle className="text-2xl tabular-nums">
-            {formatCurrency(summary.plannedTotal, currency)}
-          </CardTitle>
-        </CardHeader>
-      </Card>
-      {summary.byCategory.length > 0 ? (
-        <Card className="sm:col-span-2 xl:col-span-4">
+      {summary.byPaymentMethod.length > 0 ? (
+        <Card className="animate-fade-up stagger-3 sm:col-span-2 xl:col-span-1">
           <CardHeader>
-            <CardDescription>By category</CardDescription>
-            <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {summary.byCategory.map((category) => (
+            <CardDescription>By payment method</CardDescription>
+            <div className="mt-2 space-y-2">
+              {summary.byPaymentMethod.map((item) => (
                 <div
-                  key={category.id}
-                  className="flex items-center justify-between gap-3 text-sm"
+                  key={item.method}
+                  className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-muted/60"
                 >
-                  <span className="inline-flex min-w-0 items-center gap-2 text-muted-foreground">
-                    <span
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                      aria-hidden
-                    />
-                    <span className="truncate">{category.name}</span>
+                  <span className="truncate text-muted-foreground">
+                    {item.label}
                   </span>
-                  <span className="shrink-0 font-medium tabular-nums">
-                    {formatCurrency(category.total, currency)}
+                  <span className="shrink-0 font-heading font-semibold tabular-nums">
+                    {formatCurrency(item.total, currency)}
                   </span>
                 </div>
               ))}

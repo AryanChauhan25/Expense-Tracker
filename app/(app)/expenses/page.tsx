@@ -11,9 +11,10 @@ import { ExpenseDialog } from "@/features/expenses/components/expense-dialog";
 import { ExpenseFiltersBar } from "@/features/expenses/components/expense-filters";
 import { ExpenseSummaryCards } from "@/features/expenses/components/expense-summary";
 import { ExpenseTable } from "@/features/expenses/components/expense-table";
+import { SpendingPowerCard } from "@/features/expenses/components/spending-power-card";
 import {
   currentPeriod,
-  listExpenseCategories,
+  getSpendingPower,
   listExpenses,
   summarizeExpenses,
 } from "@/features/expenses/queries";
@@ -38,9 +39,7 @@ function parseSearchParams(
   const parsed = expenseFiltersSchema.safeParse({
     month: pick("month") || undefined,
     year: pick("year") || undefined,
-    category_id: pick("category_id") || undefined,
-    recurring: pick("recurring") || undefined,
-    timing: pick("timing") || undefined,
+    payment_method: pick("payment_method") || undefined,
     q: pick("q") || undefined,
   });
 
@@ -49,17 +48,11 @@ function parseSearchParams(
   }
 
   const filters = { ...parsed.data };
-  if (!filters.category_id) {
-    delete filters.category_id;
+  if (!filters.payment_method) {
+    delete filters.payment_method;
   }
   if (!filters.q) {
     delete filters.q;
-  }
-  if (!filters.recurring || filters.recurring === "all") {
-    delete filters.recurring;
-  }
-  if (!filters.timing || filters.timing === "all") {
-    delete filters.timing;
   }
 
   return filters;
@@ -73,31 +66,26 @@ function availableYears(): number[] {
 export default async function ExpensesPage({ searchParams }: ExpensesPageProps) {
   const profile = await requireProfile();
   const filters = parseSearchParams(await searchParams);
+  const period = currentPeriod();
 
-  const [categoriesResult, expensesResult] = await Promise.all([
-    listExpenseCategories(),
+  const [expensesResult, powerResult] = await Promise.all([
     listExpenses(filters),
+    getSpendingPower(period.month, period.year),
   ]);
 
-  const { categories, error: categoriesError } = categoriesResult;
   const { rows, error: expensesError } = expensesResult;
-  const error = categoriesError ?? expensesError;
+  const error = expensesError ?? powerResult.error;
   const summary = summarizeExpenses(rows);
   const hasActiveFilters = Boolean(
-    filters.month ||
-      filters.year ||
-      filters.category_id ||
-      filters.recurring ||
-      filters.timing ||
-      filters.q,
+    filters.month || filters.year || filters.payment_method || filters.q,
   );
 
   return (
     <>
       <PageHeader
         title="Expenses"
-        description="Categorised spending, recurring costs and planned future expenses."
-        action={<ExpenseDialog categories={categories} />}
+        description="Log daily spends: what, where, how much, and how you paid."
+        action={<ExpenseDialog />}
       />
 
       {error ? (
@@ -108,18 +96,22 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
       ) : null}
 
       <div className="space-y-6">
+        {powerResult.power ? (
+          <SpendingPowerCard
+            power={powerResult.power}
+            currency={profile.currency}
+          />
+        ) : null}
+
         <ExpenseSummaryCards summary={summary} currency={profile.currency} />
 
         <Suspense fallback={<Skeleton className="h-10 w-full rounded-md" />}>
           <ExpenseFiltersBar
             month={filters.month}
             year={filters.year}
-            category_id={filters.category_id}
-            recurring={filters.recurring}
-            timing={filters.timing}
+            payment_method={filters.payment_method}
             q={filters.q}
             years={availableYears()}
-            categories={categories}
           />
         </Suspense>
 
@@ -133,21 +125,13 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
             }
             description={
               hasActiveFilters
-                ? "Try clearing filters or adjusting month, category, recurring or planned."
-                : "Add your first expense to start tracking spending by category."
+                ? "Try clearing filters or adjusting month, year or payment method."
+                : "Add something like ₹350 Swiggy food on credit card."
             }
-            action={
-              hasActiveFilters ? undefined : (
-                <ExpenseDialog categories={categories} />
-              )
-            }
+            action={hasActiveFilters ? undefined : <ExpenseDialog />}
           />
         ) : (
-          <ExpenseTable
-            rows={rows}
-            categories={categories}
-            currency={profile.currency}
-          />
+          <ExpenseTable rows={rows} currency={profile.currency} />
         )}
       </div>
     </>

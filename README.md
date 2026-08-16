@@ -11,6 +11,7 @@ Full-stack expense tracker and monthly funds manager (Next.js + Supabase), built
 - **Phase 5 — done:** budget planner with monthly budgets, category limits and overspending alerts.
 - **Phase 6 — done:** dashboard analytics, charts, financial health score and smart insights.
 - **Phase 7 — done:** savings goals with emergency fund, investments, progress and contributions.
+- **Phase 8 — done:** reports for daily/weekly/monthly/yearly/custom ranges with PDF and Excel export.
 
 ## Local development
 
@@ -67,6 +68,24 @@ Auth is enforced in two places: `proxy.ts` refreshes the session and redirects u
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 
-## Next phase
+## Preventing Supabase pause (free tier)
 
-**Phase 8:** reports and export (daily/weekly/monthly/yearly/custom, PDF & Excel).
+Free Supabase projects pause after roughly a week of inactivity. This repo includes an external keep-alive (a paused project cannot wake itself):
+
+1. **GitHub Actions** — `.github/workflows/supabase-keepalive.yml` runs every 3 days and pings Auth + REST.
+2. **Vercel Cron** (after deploy) — `vercel.json` hits `/api/cron/keep-alive` on the same cadence.
+
+### One-time setup
+
+1. In the [Supabase dashboard](https://supabase.com/dashboard), **restore** the project if it is currently paused.
+2. Add repository secrets (Settings → Secrets and variables → Actions):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. Push these workflow files to `main`, then run **Actions → Supabase Keep-Alive → Run workflow** once to verify.
+4. If you deploy to Vercel, also set `CRON_SECRET` in the Vercel project env and the same value is sent automatically by Vercel Cron.
+
+Manual check (dev):
+
+```bash
+curl http://localhost:3000/api/cron/keep-alive
+```

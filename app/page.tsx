@@ -39,15 +39,15 @@ export default async function HomePage() {
     <>
       <SiteHeader isSignedIn={Boolean(user)} />
       <main className="flex-1">
-        <div className="mx-auto max-w-6xl space-y-10 px-4 py-10 sm:px-6 sm:py-14">
-          <section className="space-y-4">
+        <div className="mx-auto max-w-6xl space-y-12 px-4 py-10 sm:px-6 sm:py-16">
+          <section className="animate-fade-up space-y-5">
             <Badge variant="secondary" className="w-fit">
-              Phase 2 · Auth &amp; database ready
+              Daily spending, simply tracked
             </Badge>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h1 className="font-heading max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
               Personal expense tracker &amp; monthly funds manager
             </h1>
-            <p className="max-w-2xl leading-relaxed text-muted-foreground">
+            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Track income and spending, plan monthly budgets, and watch your
               savings grow. Built on Next.js and Supabase with row-level security
               so your data stays yours.
@@ -67,13 +67,10 @@ export default async function HomePage() {
             </div>
           </section>
 
-          <Card>
+          <Card className="animate-fade-up stagger-1">
             <CardHeader>
-              <span className="flex size-10 items-center justify-center rounded-full bg-emerald-500/10">
-                <ShieldCheck
-                  className="size-5 text-emerald-600 dark:text-emerald-400"
-                  aria-hidden
-                />
+              <span className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <ShieldCheck className="size-5" aria-hidden />
               </span>
               <CardTitle>Secure by default</CardTitle>
               <CardDescription>
@@ -84,24 +81,25 @@ export default async function HomePage() {
             </CardHeader>
           </Card>
 
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold tracking-tight">Modules</h2>
+          <section className="animate-fade-up stagger-2 space-y-4">
+            <h2 className="font-heading text-2xl font-semibold tracking-tight">
+              Modules
+            </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {appModules.map((module) => {
                 const Icon = moduleIcons[module.id as keyof typeof moduleIcons];
                 return (
                   <div
                     key={module.id}
-                    className="flex items-start gap-3 rounded-lg border bg-card p-4"
+                    className="group flex items-start gap-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md hover:shadow-primary/10"
                   >
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
-                      <Icon
-                        className="size-4 text-muted-foreground"
-                        aria-hidden
-                      />
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+                      <Icon className="size-4" aria-hidden />
                     </span>
                     <div>
-                      <p className="text-sm font-medium">{module.label}</p>
+                      <p className="font-heading text-sm font-semibold">
+                        {module.label}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {module.path}
                       </p>
